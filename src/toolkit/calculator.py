@@ -1,4 +1,5 @@
 import re
+import argparse
 
 operators = {
     '(': -1,
@@ -25,8 +26,7 @@ def validation(expression):
 
     #Проверка на то, что введены минимум два числа
     if len(re.findall(r'\d+[\+\-\*\/\(\)\%]\d+|\d+\.\d+[\+\-\*\/\(\)\%]\d+\.\d+', expression))==0:
-        print("Введено некорректное математическое выражение или строка пуста")
-        return False
+        raise ValueError("Введено некорректное математическое выражение или строка пуста")
 
     #Обработка унарного +
     for i in ['+', '-', '*', '/', '%', '(']:
@@ -38,39 +38,33 @@ def validation(expression):
 
     #Проверка последнего символа
     if expression[-1] in '.+-*/%(':
-        print("Недопустимое окончание выражения")
-        return False
+        raise ValueError("Недопустимое окончание выражения")
 
     #Проверка дробных чисел
     if expression[0] == '.':
-        print("Неверно введено число с плавающей точкой")
-        return False
+        raise ValueError("Неверно введено число с плавающей точкой")
     for i in operators:
         if expression.count(i+".")>0:
-            print("Неверно введено число с плавающей точкой")
-            return False
+            raise ValueError("Неверно введено число с плавающей точкой")
 
     #Проверка количества операторов
     for i in ['+', '-', '/']:
         if expression.count(i*3) > 0:
-            print("Обнаружено недопустимое кол-во операторов")
-            return False
+            raise ValueError("Обнаружено недопустимое кол-во операторов")
+
     for i in ['*', '%', '.']:
         if expression.count(i*2) > 0:
-            print("Обнаружено недопустимое кол-во операторов")
-            return False
+            raise ValueError("Обнаружено недопустимое кол-во операторов")
 
     #Проверка количества скобок
     if expression.count('(') != expression.count(')'):
         print(expression.count('('), expression.count(')'))
-        print("Обнаружено недопустимое кол-во операторов")
-        return False
+        raise ValueError("Обнаружено недопустимое кол-во операторов")
 
     #Проверка на посторонние символы
     for i in expression:
         if i not in "0123456789.+-*/%()":
-            print("Обнаружены недопустимые значения")
-            return False
+            raise ValueError("Обнаружены недопустимые значения")
     return expression
 
 def tokenization(expression):
@@ -79,7 +73,7 @@ def tokenization(expression):
     if expression:
         #Создание массива токенов регулярным выражением
         tokens = re.findall(r'\d+\.\d+|\d+|[\+\-\*\/\(\)\%]', expression)
-        for i in range(len(tokens)-4):
+        for i in range(len(tokens)-2):
             # Формирование токенов с унарным минусом
             for j in ['+', '-', '*', '/', '%', '(']:
                 if tokens[i] + tokens[i+1] == j+"-":
@@ -160,14 +154,46 @@ def calculation(expression):
                 multipop(j)
                 break
             elif expression[j] == '%':
-                expression[j] = str(float(expression[j-2]) % float(expression[j-1]))
+                expression[j] = str(float(expression[j-2]) % int(expression[j-1]))
                 multipop(j)
                 break
     return expression[0]
 
 # Пользуйтесь, батюшка
-token = tokenization("+(3/5)-2")
-if token:
-    parsed  = parse(token)
-    expression = calculation(parsed)
-    print(expression)
+def evaluate(expression):
+    token = tokenization(expression)
+    if token:
+
+        parsed = parse(token)
+        return calculation(parsed)
+
+
+def build_parser():
+    parser = argparse.ArgumentParser(
+        prog="toolkit calc",
+        description="Вычислить математическое выражение",
+    )
+    parser.add_argument(
+        "expression",
+        type=str,
+        help='Математическое выражение, например: "2+2*2"',
+    )
+    return parser
+
+
+def main(argv):
+    parser = build_parser()
+    args = parser.parse_args(argv)
+
+    try:
+        result = evaluate(args.expression)
+    except Exception as e:
+        print(f"Ошибка: {e}")
+        return 2
+
+    print(result)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
