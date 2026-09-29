@@ -1,5 +1,6 @@
 import re
 import argparse
+from . import errors
 
 operators = {
     '(': -1,
@@ -25,8 +26,8 @@ def validation(expression):
         expression = expression.replace('-(', '-1*(', 1)
 
     #Проверка на то, что введены минимум два числа
-    if len(re.findall(r'\d+[\+\-\*\/\(\)\%]\d+|\d+\.\d+[\+\-\*\/\(\)\%]\d+\.\d+', expression))==0:
-        raise ValueError("Введено некорректное математическое выражение или строка пуста")
+    if len(re.findall(r'\d+[\+\-\*\/\(\)\%]\d+|\d+\.\d+[\+\-\*\/\(\)\%]\d+\.\d+', expression))==0 or len(expression)==0:
+        raise errors.ExceptionError()
 
     #Обработка унарного +
     for i in ['+', '-', '*', '/', '%', '(']:
@@ -38,33 +39,36 @@ def validation(expression):
 
     #Проверка последнего символа
     if expression[-1] in '.+-*/%(':
-        raise ValueError("Недопустимое окончание выражения")
+        raise errors.ExceptionEndError()
+
+    if expression.count("/0") > 0:
+        raise errors.ZeroDivisionError()
 
     #Проверка дробных чисел
     if expression[0] == '.':
-        raise ValueError("Неверно введено число с плавающей точкой")
+        raise errors.WrongFloatError()
     for i in operators:
         if expression.count(i+".")>0:
-            raise ValueError("Неверно введено число с плавающей точкой")
+            raise errors.WrongFloatError()
 
     #Проверка количества операторов
     for i in ['+', '-', '/']:
         if expression.count(i*3) > 0:
-            raise ValueError("Обнаружено недопустимое кол-во операторов")
+            raise errors.OperatorsCountError()
 
     for i in ['*', '%', '.']:
         if expression.count(i*2) > 0:
-            raise ValueError("Обнаружено недопустимое кол-во операторов")
+            raise errors.OperatorsCountError()
 
     #Проверка количества скобок
     if expression.count('(') != expression.count(')'):
         print(expression.count('('), expression.count(')'))
-        raise ValueError("Обнаружено недопустимое кол-во операторов")
+        raise errors.OperatorsCountError()
 
     #Проверка на посторонние символы
     for i in expression:
         if i not in "0123456789.+-*/%()":
-            raise ValueError("Обнаружены недопустимые значения")
+            raise errors.WrongSymbolsError()
     return expression
 
 def tokenization(expression):

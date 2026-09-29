@@ -16,7 +16,7 @@ def build_parser():
 
     # convert
     conv_parser = subparsers.add_parser("convert", help="Перевести единицы")
-    conv_parser.add_argument("value", type=float)
+    conv_parser.add_argument("value", type=str)
     conv_parser.add_argument("--from", dest="from_unit", required=True)
     conv_parser.add_argument("--to", dest="to_unit", required=True)
     conv_parser.set_defaults(func=converter.main)
