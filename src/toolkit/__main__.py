@@ -1,11 +1,13 @@
 import argparse
-from . import calculator, converter
+
+from . import calculator
+from . import converter
 
 
 def build_parser():
     parser = argparse.ArgumentParser(
         prog="toolkit",
-        description="Набор утилит: калькулятор и конвертер единиц",
+        description="Vsevolod Begletsov's Toolkit (calculator and converter)",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
@@ -24,19 +26,17 @@ def build_parser():
     return parser
 
 
-def main(argv=None) -> int:
+def main(argv):
     parser = build_parser()
     args = parser.parse_args(argv)
 
     if args.command == "calc":
         return calculator.main([args.expression])
     elif args.command == "convert":
-        return converter.main(
-            [str(args.value), "--from", args.from_unit, "--to", args.to_unit]
-        )
+        return converter.main([str(args.value), "--from", args.from_unit, "--to", args.to_unit])
     parser.print_help()
     return 0
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(main(argv=None))

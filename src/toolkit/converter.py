@@ -1,55 +1,51 @@
 import argparse
+
 from . import errors
 
-systems_length = {
-    'mm': 1000000,
-    'cm': 100000,
-    'm': 1000,
-    'km': 1,
-}
-systems_mass = {
-    'g': 1000,
-    'kg': 1,
-}
-systems_degrees = {
-    'c': [0, 1, -274.15],
-    'f': [32, 1.8, -459.67],
-    'k': [274.15, 1, 0]
-}
+systems_length = {"mm": 1000000, "cm": 100000, "m": 1000, "km": 1}
+systems_mass = {"g": 1000, "kg": 1}
+systems_degrees = {"c": [0, 1, -274.15], "f": [32, 1.8, -459.67], "k": [274.15, 1, 0]}
+
 
 def validation(value, fr, to):
-    value = value.replace(' ', '')
-    value = value.replace(',', '.')
+    value = value.replace(" ", "")
+    value = value.replace(",", ".")
     if fr == to:
         raise errors.SameSystemsError()
-    if float(value)<=systems_degrees[fr][2]:
+    if fr in systems_degrees and float(value) <= systems_degrees[fr][2]:
         raise errors.AbsoluteZeroError()
     for i in value:
-        if i not in '0123456789.':
+        if i not in "0123456789.":
             raise errors.ConverterSymbolsError()
     for i in [systems_length, systems_mass, systems_degrees]:
         if fr in i and to not in i:
             raise errors.WrongGroupsError()
     return value
 
+
 def convert(value, fr, to):
     value = validation(value, fr, to)
     if fr in systems_length:
-        return float(value)*systems_length[to]/systems_length[fr]
+        return float(value) * systems_length[to] / systems_length[fr]
     elif fr in systems_mass:
-        return float(value)*systems_mass[fr]/systems_mass[to]
+        return float(value) * systems_mass[to] / systems_mass[fr]
     elif fr in systems_degrees:
-        if fr == 'c':
-            return float(value)*systems_degrees[to][1]+systems_degrees[to][0]
+        if fr == "c":
+            return float(value) * systems_degrees[to][1] + systems_degrees[to][0]
         else:
-            if fr=='f' and to=='k':
-                return (float(value)+459.67)*systems_degrees[fr][1]**-1
-            if fr=='k' and to=='f':
-                return (float(value) - systems_degrees[fr][0]+1)*systems_degrees[to][1]+systems_degrees[to][0]
-            return (float(value)-systems_degrees[fr][0])/systems_degrees[fr][1]
+            if fr == "f" and to == "k":
+                return round((float(value) + 459.67) * systems_degrees[fr][1] ** -1, 2)
+            if fr == "k" and to == "f":
+                return round(
+                    (float(value) - systems_degrees[fr][0] + 1) * systems_degrees[to][1] + systems_degrees[to][0], 2
+                )
+            return round((float(value) - systems_degrees[fr][0]) / systems_degrees[fr][1], 2)
+    return None
+
 
 def evaluate(value, fr, to):
     return convert(value, fr, to)
+
 
 def build_parser():
     parser = argparse.ArgumentParser(
@@ -59,7 +55,7 @@ def build_parser():
     parser.add_argument(
         "value",
         type=str,
-        help='Значение, которое вы конвертируете',
+        help="Значение, которое вы конвертируете",
     )
     parser.add_argument(
         "--from",
@@ -74,6 +70,7 @@ def build_parser():
         help="...",
     )
     return parser
+
 
 def main(argv):
     parser = build_parser()
