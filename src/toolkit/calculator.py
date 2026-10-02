@@ -186,15 +186,8 @@ def evaluate(expression):
 
 # Функции для связи с __main__.py
 def build_parser():
-    parser = argparse.ArgumentParser(
-        prog="toolkit calc",
-        description="Вычислить выражение",
-    )
-    parser.add_argument(
-        "expression",
-        type=str,
-        help='Например: "2+2*2"',
-    )
+    parser = argparse.ArgumentParser(prog="toolkit calc", description="Вычислить выражение")
+    parser.add_argument("expression", type=str, help='Например: "2+2*2"')
     return parser
 
 

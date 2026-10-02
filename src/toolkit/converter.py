@@ -48,27 +48,12 @@ def evaluate(value, fr, to):
 
 
 def build_parser():
-    parser = argparse.ArgumentParser(
-        prog="toolkit converter",
-        description="Сконвертировать различные значения",
-    )
+    parser = argparse.ArgumentParser(prog="toolkit converter", description="Сконвертировать различные значения")
+    parser.add_argument("value", type=str, help="Конвертируемое значение")
     parser.add_argument(
-        "value",
-        type=str,
-        help="Значение, которое вы конвертируете",
+        "--from", dest="from_unit", help="Из какой системы измерений хотите перевести значение", required=True
     )
-    parser.add_argument(
-        "--from",
-        dest="from_unit",
-        required=True,
-        help="...",
-    )
-    parser.add_argument(
-        "--to",
-        dest="to_unit",
-        required=True,
-        help="...",
-    )
+    parser.add_argument("--to", dest="to_unit", help="В какую систему измерений хотите перевести число", required=True)
     return parser
 
 

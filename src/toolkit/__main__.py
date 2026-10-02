@@ -18,9 +18,13 @@ def build_parser():
 
     # convert
     conv_parser = subparsers.add_parser("convert", help="Перевести единицы")
-    conv_parser.add_argument("value", type=str)
-    conv_parser.add_argument("--from", dest="from_unit", required=True)
-    conv_parser.add_argument("--to", dest="to_unit", required=True)
+    conv_parser.add_argument("value", type=str, help="Конвертируемое значение")
+    conv_parser.add_argument(
+        "--from", dest="from_unit", help="Из какой системы измерений хотите перевести значение", required=True
+    )
+    conv_parser.add_argument(
+        "--to", dest="to_unit", help="В какую систему измерений хотите перевести число", required=True
+    )
     conv_parser.set_defaults(func=converter.main)
 
     return parser
