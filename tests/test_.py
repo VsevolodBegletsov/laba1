@@ -32,7 +32,10 @@ class TestCalculator(unittest.TestCase):
             calculator.evaluate("2/0")
 
     def test_parentheses(self):
-        self.assertEqual(calculator.evaluate("(2*3)/5+-2*(9-10)"), 3.2)
+        self.assertEqual(calculator.evaluate("(2*3)//5+-2*(9-10)"), 3.0)
+
+    def test_mod(self):
+        self.assertEqual(calculator.evaluate("((2*3)//5+-2*(9-10))%2"), 1.0)
 
     def test_order(self):
         self.assertEqual(calculator.evaluate("(2*3)/5+-2*(9-10)"), -0.8)
@@ -73,8 +76,6 @@ class TestCLI(unittest.TestCase):
 
     def test_cli_calc_err_2(self):
         self.assertEqual(__main__.main(["calc", "+2"]), 0)
-
-    # Executing the tests in the above test case class
 
 
 if __name__ == "__main__":

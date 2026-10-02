@@ -38,7 +38,7 @@ def validation(expression):
     if expression[0] == "+":
         expression = expression[1:]
 
-    if expression.count("/0") > 0:
+    if expression.count("/0.") != expression.count("/0"):
         raise errors.ZeroDivisionError()
 
     # Проверка дробных чисел
@@ -72,9 +72,15 @@ def tokenization(expression):
     # Валидация
     expression = validation(expression)
     if expression:
+
+        # Ограничение для цикла, чтобы не выйти за пределы массива токенов
+        ogr = expression.count("//")
+        for j in ["+", "-", "*", "/", "%", "("]:
+            ogr += expression.count(j + "-")
+
         # Создание массива токенов регулярным выражением
         tokens = re.findall(r"\d+\.\d+|\d+|[\+\-\*\/\(\)\%]", expression)
-        for i in range(len(tokens) - 2):
+        for i in range(len(tokens) - (ogr + 1)):
             # Формирование токенов с унарным минусом
             for j in ["+", "-", "*", "/", "%", "("]:
                 if tokens[i] + tokens[i + 1] == j + "-":
@@ -82,8 +88,8 @@ def tokenization(expression):
                     tokens.pop(i + 1)
             # Формирование токена целочисленного деления
             if tokens[i] == "/" and tokens[i + 1] == "/":
-                tokens[i] = "//"
-                tokens.pop(i + 1)
+                tokens[i + 1] = "//"
+                tokens.pop(i)
         return tokens
     return False
 
@@ -132,36 +138,42 @@ def rpl(tokens):
 # Я это если что устно объясню ей-богу
 def calculation(expression):
     def multipop(j):
-        expression.pop(j - 1)
-        expression.pop(j - 2)
+        for i in range(2):
+            stack.pop(j)
 
-    while len(expression) > 1:
-        for j in range(len(expression)):
-            if expression[j] == "+":
-                expression[j] = str(float(expression[j - 2]) + float(expression[j - 1]))
-                multipop(j)
-                break
-            elif expression[j] == "-":
-                expression[j] = str(float(expression[j - 2]) - float(expression[j - 1]))
-                multipop(j)
-                break
-            elif expression[j] == "*":
-                expression[j] = str(float(expression[j - 2]) * float(expression[j - 1]))
-                multipop(j)
-                break
-            elif expression[j] == "/":
-                expression[j] = str(float(expression[j - 2]) / float(expression[j - 1]))
-                multipop(j)
-                break
-            elif expression[j] == "//":
-                expression[j] = str(float(expression[j - 2]) // float(expression[j - 1]))
-                multipop(j)
-                break
-            elif expression[j] == "%":
-                expression[j] = str(float(expression[j - 2]) % int(expression[j - 1]))
-                multipop(j)
-                break
-    return float(expression[0])
+    ops = ["+", "-", "*", "/", "//", "%"]
+    stack = []
+    for i in expression:
+        stack.append(i)
+        if i in ops:
+            for j in range(len(stack)):
+                if stack[j] not in ops and stack[j + 1] not in ops:
+                    if stack[j + 2] == "+":
+                        stack[j + 2] = str(float(stack[j]) + float(stack[j + 1]))
+                        multipop(j)
+                        break
+                    if stack[j + 2] == "-":
+                        stack[j + 2] = str(float(stack[j]) - float(stack[j + 1]))
+                        multipop(j)
+                        break
+                    if stack[j + 2] == "*":
+                        stack[j + 2] = str(float(stack[j]) * float(stack[j + 1]))
+                        multipop(j)
+                        break
+                    if stack[j + 2] == "/":
+                        stack[j + 2] = str(float(stack[j]) / float(stack[j + 1]))
+                        multipop(j)
+                        break
+                    if stack[j + 2] == "//":
+                        stack[j + 2] = str(float(stack[j]) // float(stack[j + 1]))
+                        multipop(j)
+                        break
+                    if stack[j + 2] == "%":
+                        stack[j + 2] = str(float(stack[j]) % float(stack[j + 1]))
+                        multipop(j)
+                        break
+
+    return float(stack[0])
 
 
 # Пользуйтесь, батюшка
@@ -172,6 +184,7 @@ def evaluate(expression):
         return calculation(parsed)
 
 
+# Функции для связи с __main__.py
 def build_parser():
     parser = argparse.ArgumentParser(
         prog="toolkit calc",
@@ -194,7 +207,6 @@ def main(argv):
     except Exception as e:
         print(f"Ошибка: {e}")
         return 2
-
     print(result)
     return 0
 
